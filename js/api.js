@@ -33,7 +33,8 @@ const API = {
 
     // --- RICETTE (BOM) ---
     getRicetteElencoBreve: async () => {
-        const { data, error } = await supabaseClient.from('ricette').select('id, nome').order('nome');
+        // AGGIUNTO: ora scarica anche porzioni_base e unita_porzioni per i calcoli!
+        const { data, error } = await supabaseClient.from('ricette').select('id, nome, porzioni_base, unita_porzioni').order('nome');
         if (error) throw error;
         return data;
     },
@@ -300,8 +301,16 @@ const API = {
             .select('stato_json')
             .eq('id', 1)
             .single();
-        if (error) throw error;
-        return data ? data.stato_json : { ricetteInMenu: [], spunte: {} };
+
+        // Se la riga nel DB non esiste ancora (es. primo avvio assoluto)
+        if (error && error.code === 'PGRST116') {
+            return { ricetteInMenu: [], spunte: {} };
+        } else if (error) {
+            throw error;
+        }
+
+        // Assicuriamoci di non restituire MAI null
+        return (data && data.stato_json) ? data.stato_json : { ricetteInMenu: [], spunte: {} };
     },
 
     saveSpesa: async (statoSpesa) => {

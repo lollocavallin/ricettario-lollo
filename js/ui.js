@@ -6,7 +6,10 @@ const UI = {
     renderElenco: function () {
         this.container.innerHTML = `
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                <h2 class="mb-0 fw-bold">📚 Galleria ricette</h2>
+                <h2 class="mb-0 fw-bold d-flex align-items-center">
+                    📚 Galleria ricette 
+                    <span class="badge bg-primary fs-5 ms-3 shadow-sm" id="badge-totale-ricette">-</span>
+                </h2>
                 <button class="btn btn-primary shadow-sm fw-bold" id="btn-nuova-ricetta-elenco">
                     ➕ Crea nuova ricetta
                 </button>
@@ -352,10 +355,22 @@ const UI = {
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 border-bottom pb-3">
                 <h2 id="titolo-inserimento" class="mb-3 mb-md-0 fw-bold">Nuova ricetta</h2>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <input type="file" id="input-import-txt" accept=".txt" class="d-none">
-                    <button type="button" class="btn btn-outline-primary shadow-sm fw-bold" id="btn-import-txt">📄 Importa da TXT</button>
+                    <button type="button" class="btn btn-outline-primary shadow-sm fw-bold" id="btn-toggle-import">⬇️ Importa da Testo / TXT</button>
                     <button type="button" class="btn btn-outline-danger shadow-sm fw-bold d-none" id="btn-elimina-ricetta-form">🗑 Elimina</button>
                     <button type="submit" form="form-ricetta" class="btn btn-success shadow-sm fw-bold" id="btn-salva-ricetta-top">💾 Salva ricetta</button>
+                </div>
+            </div>
+            
+            <div class="card mb-4 shadow-sm border-primary d-none" id="panel-import-rapido">
+                <div class="card-body bg-light">
+                    <h5 class="fw-bold text-primary mb-3">Importazione Rapida (AI)</h5>
+                    <textarea class="form-control mb-3 shadow-sm" id="testo-import-rapido" rows="6" placeholder="Incolla qui il testo elaborato dall'IA..."></textarea>
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <button type="button" class="btn btn-primary fw-bold shadow-sm" id="btn-analizza-testo">✍️ Invia e Compila Form</button>
+                        <span class="text-muted fw-bold mx-2">OPPURE</span>
+                        <input type="file" id="input-import-txt" accept=".txt" class="d-none">
+                        <button type="button" class="btn btn-outline-dark fw-bold shadow-sm" id="btn-import-file">📁 Importa da file TXT</button>
+                    </div>
                 </div>
             </div>
             
@@ -438,16 +453,27 @@ const UI = {
                     </div>
                     <div id="collapse-ingredienti" class="collapse show">
                         <div class="card-body bg-white pt-4">
-                            <div class="row fw-bold text-muted small mb-2 d-none d-md-flex">
-                                <div class="col-md-4">Nome ingrediente</div><div class="col-md-4 text-center">Quantità</div><div class="col-md-3">Unità di misura</div>
+                            
+                            <div class="mb-4 bg-light p-3 rounded border border-success border-opacity-25 shadow-sm">
+                                <label class="form-label fw-bold text-success mb-2">🔍 Cerca e aggiungi ingrediente</label>
+                                <input type="text" id="ricerca-ingrediente" class="form-control shadow-sm border-success" placeholder="Inizia a digitare (es. Farina...) e premi Invio" autocomplete="off">
+                                <div id="suggerimenti-ingredienti" class="d-flex flex-wrap gap-2 mt-3"></div>
                             </div>
+
+                            <div class="row fw-bold text-muted small mb-2 d-none d-md-flex">
+                                <div class="col-md-5">Nome ingrediente</div><div class="col-md-3">Quantità</div><div class="col-md-3">Unità di misura</div>
+                            </div>
+                            
                             <div id="container-ingredienti"></div>
-<div class="d-flex gap-2 mt-3">
-    <button type="button" class="btn btn-sm btn-outline-success fw-bold shadow-sm" id="btn-add-ingrediente">➕ Aggiungi ingrediente</button>
-    <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-ing">🗂️ Aggiungi Sezione</button>
-</div>                        </div>
+                            
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="button" class="btn btn-sm btn-outline-info fw-bold shadow-sm" id="btn-add-sezione-ing">🗂️ Aggiungi Sezione</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary fw-bold shadow-sm d-none" id="btn-add-ingrediente">➕ Aggiungi riga manuale</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
 
                 <div class="card mb-4 shadow-sm border-0">
                     <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#collapse-procedimento">
@@ -470,11 +496,57 @@ const UI = {
                     <div id="collapse-sottoricette" class="collapse show">
                         <div class="card-body bg-white pt-4">
                             <p class="small text-muted mb-3">Includi altre ricette indicando il moltiplicatore (es. 0.5 per mezza dose).</p>
+                            
+                            <div class="mb-4 bg-light p-3 rounded border border-warning border-opacity-25 shadow-sm">
+                                <label class="form-label fw-bold text-dark mb-2">🔍 Cerca e aggiungi sottoricetta</label>
+                                <input type="text" id="ricerca-sottoricetta" class="form-control shadow-sm border-warning" placeholder="Inizia a digitare (es. Crema...) e clicca sul suggerimento" autocomplete="off">
+                                <div id="suggerimenti-sottoricette" class="d-flex flex-wrap gap-2 mt-3"></div>
+                            </div>
+
                             <div id="container-sottoricette"></div>
-                            <button type="button" class="btn btn-sm btn-outline-warning text-dark mt-3 fw-bold shadow-sm" id="btn-add-sottoricetta">➕ Aggiungi sottoricetta</button>
+                            
                         </div>
                     </div>
                 </div>
+                <div class="modal fade" id="modal-ingrediente" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                  <div class="modal-header bg-warning text-dark border-0">
+                    <h5 class="modal-title fw-bold">⚠️ Ingrediente non in elenco</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-4">
+                    <p class="fs-5">L'ingrediente <strong id="modal-ing-nome" class="text-primary"></strong> non è nel dizionario.</p>
+                    <p class="text-muted mb-4">Come vuoi procedere?</p>
+                    
+                    <div class="d-grid gap-3">
+                      <button type="button" class="btn btn-outline-primary fw-bold text-start p-3" id="btn-opt-locale">
+                        1️⃣ Inseriscilo SOLO in questa ricetta
+                      </button>
+                      
+                      <div class="card border-success shadow-sm">
+                        <button type="button" class="btn btn-success fw-bold text-start p-3 border-0" data-bs-toggle="collapse" data-bs-target="#collapse-add-diz">
+                          2️⃣ Aggiungilo al Dizionario (Consigliato)
+                        </button>
+                        <div class="collapse" id="collapse-add-diz">
+                          <div class="card-body bg-light">
+                            <label class="form-label fw-bold small">Unità ammesse (es. g, ml, pz)</label>
+                            <div class="input-group">
+                              <input type="text" id="modal-ing-unita" class="form-control" value="g, ml, q.b.">
+                              <button type="button" class="btn btn-success fw-bold" id="btn-opt-salva-diz">Salva e Inserisci</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button type="button" class="btn btn-light fw-bold text-start p-3 border" data-bs-dismiss="modal">
+                        3️⃣ Annulla (ho sbagliato a scrivere)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             </form>
         `;
     },
@@ -544,26 +616,24 @@ const UI = {
         `;
     },
 
-    getSottoricettaRowHTML: function (opzioniRicetteHtml = '<option value="">Caricamento...</option>') {
+    getSottoricettaRowHTML: function (nomeRicetta = '', resaBase = '') {
         return `
-            <div class="row mb-2 riga-sottoricetta align-items-center mt-2">
-                <div class="col-md-5 mb-2 mb-md-0">
-                    <select class="form-select sr-nome" required>
-                        ${opzioniRicetteHtml}
-                    </select>
+            <div class="row mb-2 riga-sottoricetta align-items-start mt-2">
+                <div class="col-md-7 mb-2 mb-md-0">
+                    <input type="text" class="form-control sr-nome fw-bold bg-light" value="${nomeRicetta}" readonly required>
+                    <small class="text-muted sr-hint d-block mt-1 ps-1" style="font-size: 0.85em; min-height: 1.2em;"><strong>Resa Base:</strong> ${resaBase}</small>
                 </div>
-                <div class="col-md-5 mb-2 mb-md-0">
+                <div class="col-md-4 mb-2 mb-md-0">
                     <div class="stepper-group shadow-sm">
                         <span class="bg-light text-muted small px-2 border-end d-flex align-items-center">Moltiplicatore</span>
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                        <input type="number" step="0.01" class="form-control stepper-input sr-moltiplicatore px-0" placeholder="1" required>
+                        <input type="number" step="0.01" class="form-control stepper-input sr-moltiplicatore px-0" value="1" required>
                         <button type="button" class="stepper-btn px-2" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                     </div>
+                    <small class="text-primary sr-calc-hint d-block mt-1 text-center fw-bold" style="font-size: 0.85em; min-height: 1.2em;"></small>
                 </div>
-                <div class="col-md-2 text-end d-flex justify-content-end gap-1">
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-up" tabindex="-1" title="Sposta su">↑</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm btn-move-down" tabindex="-1" title="Sposta giù">↓</button>
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-row" tabindex="-1" title="Elimina">✖</button>
+                <div class="col-md-1 text-end">
+                    <button type="button" class="btn btn-outline-danger btn-remove-row" tabindex="-1">✖</button>
                 </div>
             </div>
         `;
@@ -671,7 +741,7 @@ const UI = {
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
                             <div class="stepper-group mb-4 shadow-sm" style="height: 55px;">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                                <input type="number" step="0.5" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
+                                <input type="number" step="1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                             </div>
 
@@ -707,15 +777,15 @@ const UI = {
                 <div class="card-body bg-light">
                     <form id="form-produzione">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Seleziona Ricetta</label>
-                                <select class="form-select" id="prod-ricetta" required>
-                                    <option value="">Caricamento ricette...</option>
-                                </select>
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold">🔍 Cerca Ricetta Prodotta</label>
+                                <input type="text" id="ricerca-prod-ricetta" class="form-control border-success shadow-sm" placeholder="Inizia a digitare (es. Crema...)" autocomplete="off">
+                                <div id="suggerimenti-prod-ricetta" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                <input type="hidden" id="prod-ricetta-id" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label class="form-label fw-bold">Data di Svolgimento</label>
-                                <input type="date" class="form-control" id="prod-data" required>
+                                <input type="date" class="form-control shadow-sm" id="prod-data" required>
                             </div>
                         </div>
 
@@ -761,10 +831,10 @@ const UI = {
                             Aggiungi al carrello
                         </div>
                         <div class="card-body bg-light">
-                            <label class="form-label small fw-bold text-muted">Ricetta:</label>
-                            <select class="form-select mb-3 shadow-sm" id="spesa-select-ricetta">
-                                <option value="">Caricamento...</option>
-                            </select>
+                            <label class="form-label small fw-bold text-muted">🔍 Cerca Ricetta:</label>
+                            <input type="text" id="ricerca-spesa-ricetta" class="form-control mb-3 shadow-sm border-primary" placeholder="Inizia a digitare..." autocomplete="off">
+                            <div id="suggerimenti-spesa-ricetta" class="d-flex flex-wrap gap-2 mb-3"></div>
+                            <input type="hidden" id="spesa-ricetta-id">
                             
                             <label class="form-label small fw-bold text-muted">Porzioni da preparare:</label>
                             <div class="stepper-group mb-3 shadow-sm">
