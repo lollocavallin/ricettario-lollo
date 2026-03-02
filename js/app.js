@@ -15,10 +15,130 @@ function applicaTema() { document.documentElement.setAttribute('data-bs-theme', 
 
 applicaTema();
 
+// ==========================================
+// MOTORE CALCOLATORE TEGLIE
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const formaOrig = document.getElementById('calc-forma-orig');
+    const formaDest = document.getElementById('calc-forma-dest');
+    const btnApplica = document.getElementById('btn-applica-teglia');
+    let currentMultiplier = 1;
+
+    // Mostra/nasconde i campi (Diametro vs Lati) in base alla forma scelta
+    const aggiornaVistaTeglie = () => {
+        document.getElementById('calc-inputs-orig-tonda').classList.toggle('d-none', formaOrig.value !== 'tonda');
+        document.getElementById('calc-inputs-orig-rett').classList.toggle('d-none', formaOrig.value !== 'rettangolare');
+        document.getElementById('calc-inputs-dest-tonda').classList.toggle('d-none', formaDest.value !== 'tonda');
+        document.getElementById('calc-inputs-dest-rett').classList.toggle('d-none', formaDest.value !== 'rettangolare');
+        calcolaMoltiplicatoreTeglia();
+    };
+
+    // La matematica delle aree
+    const calcolaMoltiplicatoreTeglia = () => {
+        let areaOrig = 0, areaDest = 0;
+
+        if (formaOrig.value === 'tonda') {
+            const d = parseFloat(document.getElementById('calc-d-orig').value) || 0;
+            areaOrig = Math.PI * Math.pow(d / 2, 2);
+        } else {
+            const l1 = parseFloat(document.getElementById('calc-l1-orig').value) || 0;
+            const l2 = parseFloat(document.getElementById('calc-l2-orig').value) || 0;
+            areaOrig = l1 * l2;
+        }
+
+        if (formaDest.value === 'tonda') {
+            const d = parseFloat(document.getElementById('calc-d-dest').value) || 0;
+            areaDest = Math.PI * Math.pow(d / 2, 2);
+        } else {
+            const l1 = parseFloat(document.getElementById('calc-l1-dest').value) || 0;
+            const l2 = parseFloat(document.getElementById('calc-l2-dest').value) || 0;
+            areaDest = l1 * l2;
+        }
+
+        const resEl = document.getElementById('calc-risultato');
+        if (areaOrig > 0 && areaDest > 0) {
+            currentMultiplier = areaDest / areaOrig;
+            resEl.innerHTML = `x ${currentMultiplier.toFixed(2)}`;
+            resEl.className = 'display-4 fw-bold text-success';
+            btnApplica.disabled = false;
+        } else {
+            currentMultiplier = 1;
+            resEl.innerHTML = '---';
+            resEl.className = 'display-4 fw-bold text-muted';
+            btnApplica.disabled = true;
+        }
+    };
+
+    if (formaOrig && formaDest) {
+        formaOrig.addEventListener('change', aggiornaVistaTeglie);
+        formaDest.addEventListener('change', aggiornaVistaTeglie);
+        document.querySelectorAll('.calc-input').forEach(inp => inp.addEventListener('input', calcolaMoltiplicatoreTeglia));
+
+        // Il tasto Magico che inietta il risultato nella ricetta
+        btnApplica.addEventListener('click', () => {
+            const inputRicalcolo = document.getElementById('input-ricalcolo');
+            if (inputRicalcolo) {
+                // Prende le porzioni base della ricetta (salvate nell'attributo data-base) e le moltiplica!
+                const base = parseFloat(inputRicalcolo.getAttribute('data-base')) || 1;
+                inputRicalcolo.value = Number((base * currentMultiplier).toFixed(2));
+
+                // Forza la lista ingredienti ad aggiornarsi
+                inputRicalcolo.dispatchEvent(new Event('input', { bubbles: true }));
+
+                // Chiude il modale in automatico
+                bootstrap.Modal.getInstance(document.getElementById('modal-calcolatore-teglie')).hide();
+            }
+
+        });
+        // ==========================================
+        // RESET AUTOMATICO QUANDO SI CHIUDE LA FINESTRA
+        // ==========================================
+        const modalCalcolatoreEl = document.getElementById('modal-calcolatore-teglie');
+        if (modalCalcolatoreEl) {
+            modalCalcolatoreEl.addEventListener('hidden.bs.modal', () => {
+                // 1. Resetta le tendine su "Tonda"
+                formaOrig.value = 'tonda';
+                formaDest.value = 'tonda';
+
+                // 2. Svuota tutti i campi numerici digitati
+                document.querySelectorAll('.calc-input').forEach(inp => inp.value = '');
+
+                // 3. Ripristina i pannelli giusti
+                aggiornaVistaTeglie();
+
+                // 4. Azzera il numerone del risultato e riblocca il tasto
+                currentMultiplier = 1;
+                const resEl = document.getElementById('calc-risultato');
+                resEl.innerHTML = '---';
+                resEl.className = 'display-4 fw-bold text-muted';
+                btnApplica.disabled = true;
+            });
+        }
+    } // <-- Questa è la chiusura di if (formaOrig && formaDest)
+});
+
 // --- 1. IL GUARDIANO (Avvio App) ---
+let utenteLoggato = null; // Variabile globale per sapere chi è loggato
+let isUtenteAdmin = false; // Variabile globale per i permessi
+
 document.addEventListener('DOMContentLoaded', async () => {
     const session = await API.getSession();
     if (!session) return; // Se non loggato, resta sul form
+
+    // 1. SALVIAMO I DATI DELL'UTENTE
+    utenteLoggato = session.user;
+
+    // 2. CONTROLLIAMO SE È L'ADMIN (Leggendo il codice segreto di Supabase)
+    if (utenteLoggato.user_metadata && utenteLoggato.user_metadata.ruolo === 'admin') {
+        isUtenteAdmin = true;
+        console.log("👑 Accesso consentito: Amministratore");
+    } else {
+        isUtenteAdmin = false;
+        console.log("👤 Accesso consentito: Operatore standard");
+    }
+
+    // 3. APPLICHIAMO LE RESTRIZIONI VISIVE
+    applicaPermessi();
 
     document.getElementById('login-container').classList.add('d-none');
     document.getElementById('main-app-container').classList.remove('d-none');
@@ -27,6 +147,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     UI.renderElenco();
     initElenco();
 });
+
+// FUNZIONE CHE NASCONDE/MOSTRA IN BASE AL RUOLO
+function applicaPermessi() {
+    if (!isUtenteAdmin) {
+        console.log("🔒 Applico restrizioni: Utente Standard (Sola Lettura)");
+        document.body.classList.add('accesso-limitato');
+    } else {
+        console.log("🔓 Applico permessi: Amministratore");
+        document.body.classList.remove('accesso-limitato');
+    }
+}
 
 // --- 2. LOGICA NAVBAR UNIFICATA E BLINDATA ---
 function inizializzaNavbar() {

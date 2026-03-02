@@ -244,7 +244,7 @@ const UI = {
                     </div>
                 </div>
 
-                <div class="col-md-6 mb-4">
+                <div class="col-md-6 mb-4" id="sezione-admin-tag">
                     <div class="card shadow-sm border-0 h-100">
                         <div class="card-header bg-primary text-white fw-bold p-3">🏷️ Categorie e Tag</div>
                         <div class="card-body bg-white p-4">
@@ -263,7 +263,7 @@ const UI = {
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row" id="sezione-admin-dizionario">
                 <div class="col-12 mb-5">
                     <div class="card shadow-sm border-warning">
                         <div class="card-header bg-warning text-dark fw-bold p-3">🛒 Dizionario Ingredienti Centrale</div>
@@ -762,17 +762,23 @@ const UI = {
                         </div>
                         <div class="card-body bg-light">
                             <label class="form-label fw-bold">Porzioni da produrre (${ricetta.unita_porzioni}):</label>
-                            <div class="stepper-group mb-4 shadow-sm" style="height: 55px;">
+                            
+                            <div class="stepper-group mb-2 shadow-sm" style="height: 55px;">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">−</button>
-                                <input type="number" step="1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}">
+                                <input type="number" step="0.1" class="form-control stepper-input text-primary fs-4" id="input-ricalcolo" value="${ricetta.porzioni_base}" data-base="${ricetta.porzioni_base}">
                                 <button type="button" class="stepper-btn fs-3 px-4" tabindex="-1" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('input', {bubbles: true}))">+</button>
                             </div>
 
+                            <button class="btn btn-outline-info btn-sm w-100 fw-bold shadow-sm mb-4" data-bs-toggle="modal" data-bs-target="#modal-calcolatore-teglie">
+                                📐 Adatta a una nuova teglia
+                            </button>
+
                             <ul class="list-group list-group-flush shadow-sm" id="lista-ingredienti-ricalcolati">
-                                </ul>
+                            </ul>
                             
                             <div id="container-sottoricette-ricalcolate">
-                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
