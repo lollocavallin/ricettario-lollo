@@ -26,11 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ATTIVAZIONE APP NATIVA (PWA) ---
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('🔧 Motore App Nativa avviato!'))
-            .catch((err) => console.error('Errore avvio App Nativa:', err));
+        // Se stiamo aprendo il file in locale (doppio click dal PC), non prova a installarlo per non dare errori
+        if (window.location.protocol === 'file:') {
+            console.log('🔧 App Nativa in pausa (Richiede un server web, normale in locale).');
+        } else {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('🔧 Motore App Nativa avviato!'))
+                .catch((err) => console.error('Errore avvio App Nativa:', err));
+        }
     }
-
     // Mostra/nasconde i campi (Diametro vs Lati) in base alla forma scelta
     const aggiornaVistaTeglie = () => {
         document.getElementById('calc-inputs-orig-tonda').classList.toggle('d-none', formaOrig.value !== 'tonda');
@@ -874,19 +878,50 @@ async function initElenco() {
         }
         aggiornaBottoniVista();
 
+
+
+
         const selectCat = document.getElementById('filtro-categoria');
         categorie.forEach(c => selectCat.innerHTML += `<option value="${c.nome}">${c.nome}</option>`);
         const selectTag = document.getElementById('filtro-tag');
         tags.forEach(t => selectTag.innerHTML += `<option value="${t.nome}">${t.nome}</option>`);
-        const inputTesto = document.getElementById('filtro-testo');
 
+        // RECUPERO DEGLI ELEMENTI DI RICERCA
+        const inputTesto = document.getElementById('filtro-testo');
+        const inputIngrediente = document.getElementById('filtro-ingrediente');
+        const btnToggleDispensa = document.getElementById('btn-toggle-dispensa');
+        const containerDispensa = document.getElementById('container-filtro-ingrediente');
+
+        // Logica per Aprire/Chiudere il pannello Dispensa 🥕
+        if (btnToggleDispensa) {
+            btnToggleDispensa.addEventListener('click', () => {
+                containerDispensa.classList.toggle('d-none');
+                if (!containerDispensa.classList.contains('d-none')) {
+                    inputIngrediente.focus();
+                } else {
+                    inputIngrediente.value = ''; // Pulisce il testo se chiudi
+                    applicaFiltri(false);
+                }
+            });
+        }
+
+        const btnChiudiDispensa = document.getElementById('btn-chiudi-dispensa');
+        if (btnChiudiDispensa) {
+            btnChiudiDispensa.addEventListener('click', () => {
+                containerDispensa.classList.add('d-none');
+                inputIngrediente.value = '';
+                applicaFiltri(false);
+            });
+        }
+
+        // MOTORE DI RICERCA UNIFICATO
         function applicaFiltri(mantieniAperti = false) {
             const testo = inputTesto.value.toLowerCase().trim();
+            const testoIng = inputIngrediente.value.toLowerCase().trim();
             const catScelta = selectCat.value;
             const tagScelto = selectTag.value;
 
             let categorieAperte = [];
-
             if (mantieniAperti === true && isGrouped) {
                 document.querySelectorAll('#griglia-ricette .collapse.show').forEach(el => {
                     const nome = el.getAttribute('data-cat-nome');
@@ -897,31 +932,54 @@ async function initElenco() {
             let filtrate = cacheRicette.filter(r => {
                 const matchTesto = r.nome.toLowerCase().includes(testo);
                 const matchCategoria = catScelta === "" || (r.categorie && r.categorie.nome === catScelta);
-                const matchTag = tagScelto === "" || r.ricette_tags.map(rt => rt.tag.nome).includes(tagScelto);
-                return matchTesto && matchCategoria && matchTag;
+                const matchTag = tagScelto === "" || (r.ricette_tags && r.ricette_tags.map(rt => rt.tag.nome).includes(tagScelto));
+
+                // Filtro MAGICO Svuota-Dispensa
+                let matchIngrediente = true;
+                if (testoIng !== "") {
+                    let tuttiIngredienti = [];
+                    // Prende gli ingredienti base
+                    if (r.ingredienti) r.ingredienti.forEach(i => tuttiIngredienti.push(i.nome_ingrediente.toLowerCase()));
+
+                    // Prende gli ingredienti dalle sottoricette collegate
+                    if (r.figlie_ids) {
+                        r.figlie_ids.forEach(idFiglia => {
+                            const ricettaFiglia = cacheRicette.find(x => x.id === idFiglia);
+                            if (ricettaFiglia && ricettaFiglia.ingredienti) {
+                                ricettaFiglia.ingredienti.forEach(si => tuttiIngredienti.push(si.nome_ingrediente.toLowerCase()));
+                            }
+                        });
+                    }
+
+                    const terminiCercati = testoIng.split(',').map(i => i.trim()).filter(i => i !== "");
+                    matchIngrediente = terminiCercati.every(termine =>
+                        tuttiIngredienti.some(ing => ing.includes(termine))
+                    );
+                }
+
+                return matchTesto && matchCategoria && matchTag && matchIngrediente;
             });
 
             // Ordine alfabetico forzato
             filtrate.sort((a, b) => a.nome.localeCompare(b.nome));
-            ricetteAttualiFiltrate = filtrate; // Salva le ricette attualmente a schermo
+            ricetteAttualiFiltrate = filtrate; // Per la Roulette!
+
             const badgeTotale = document.getElementById('badge-totale-ricette');
             if (badgeTotale) badgeTotale.textContent = filtrate.length;
 
             UI.renderCards(filtrate, currentView, isGrouped, categorieAperte);
         }
 
-        // ASCOLTATORI
+        // ASCOLTATORI DEI FILTRI
         if (toggleRaggruppa) {
             toggleRaggruppa.addEventListener('change', (e) => {
                 isGrouped = e.target.checked;
                 applicaFiltri(true);
             });
         }
-
         inputTesto.addEventListener('input', () => applicaFiltri(false));
+        inputIngrediente.addEventListener('input', () => applicaFiltri(false));
         selectCat.addEventListener('change', () => applicaFiltri(false));
-        selectTag.addEventListener('change', () => applicaFiltri(false));
-
         // Cliccando sui bottoni, aggiorniamo la variabile e la grafica
         btnGrid.addEventListener('click', () => { currentView = 'grid'; aggiornaBottoniVista(); applicaFiltri(true); });
         btnList.addEventListener('click', () => { currentView = 'list'; aggiornaBottoniVista(); applicaFiltri(true); });

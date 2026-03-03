@@ -21,42 +21,48 @@ const UI = {
             </div>
             
             <div class="card mb-4 shadow-sm border-0 bg-white">
-                <div class="card-body row g-3 align-items-center">
-                    <div class="col-md-3">
-                        <input type="text" id="filtro-testo" class="form-control" placeholder="🔍 Cerca per nome...">
-                    </div>
-                    <div class="col-md-3">
-                        <select id="filtro-categoria" class="form-select">
-                            <option value="">Tutte le categorie</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <select id="filtro-tag" class="form-select">
-                            <option value="">Tutti i tag</option>
-                        </select>
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-3">
+                            <input type="text" id="filtro-testo" class="form-control shadow-sm" placeholder="🔍 Nome...">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="filtro-categoria" class="form-select shadow-sm">
+                                <option value="">Tutte le categorie</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 d-flex gap-2">
+                            <select id="filtro-tag" class="form-select shadow-sm w-100">
+                                <option value="">Tutti i tag</option>
+                            </select>
+                            <button class="btn btn-warning fw-bold border-warning text-dark px-3 shadow-sm flex-shrink-0 rounded" id="btn-toggle-dispensa" title="Ricerca Svuota-Dispensa" type="button">🥕</button>
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-center justify-content-md-end justify-content-between gap-3">
+                            <div class="form-check form-switch m-0 d-flex align-items-center" title="Attiva/disattiva vista a cassetti">
+                                <input class="form-check-input shadow-sm m-0" type="checkbox" id="toggle-raggruppa" checked style="cursor: pointer; transform: scale(1.3);">
+                                <label class="form-check-label small fw-bold text-muted ms-2" for="toggle-raggruppa" style="cursor: pointer; padding-top: 2px;">Categorie</label>
+                            </div>
+
+                            <div class="btn-group shadow-sm" role="group">
+                                <button type="button" class="btn btn-outline-dark active" id="btn-view-grid" title="Vista a card"><svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 1h4v4H1V1zm5 0h4v4H6V1zm5 0h4v4h-4V1zM1 6h4v4H1V6zm5 0h4v4H6V6zm5 0h4v4h-4V6zM1 11h4v4H1v-4zm5 0h4v4H6v-4zm5 0h4v4h-4v-4z"/></svg></button>
+                                <button type="button" class="btn btn-outline-dark" id="btn-view-list" title="Vista ad elenco"><svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg></button>
+                                <button type="button" class="btn btn-outline-dark" id="btn-view-compact" title="Vista compatta"><svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg></button>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="col-md-4 d-flex align-items-center justify-content-md-end justify-content-between gap-3">
-                        
-                        <div class="form-check form-switch m-0 d-flex align-items-center" title="Attiva/disattiva vista a cassetti">
-                            <input class="form-check-input shadow-sm m-0" type="checkbox" id="toggle-raggruppa" checked style="cursor: pointer; transform: scale(1.3);">
-                            <label class="form-check-label small fw-bold text-muted ms-2" for="toggle-raggruppa" style="cursor: pointer; padding-top: 2px;">Categorie</label>
-                        </div>
-
-                        <div class="btn-group shadow-sm" role="group">
-                            <button type="button" class="btn btn-outline-dark active" id="btn-view-grid" title="Vista a card">
-                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 1h4v4H1V1zm5 0h4v4H6V1zm5 0h4v4h-4V1zM1 6h4v4H1V6zm5 0h4v4H6V6zm5 0h4v4h-4V6zM1 11h4v4H1v-4zm5 0h4v4H6v-4zm5 0h4v4h-4v-4z"/></svg>
-                            </button>
-                            <button type="button" class="btn btn-outline-dark" id="btn-view-list" title="Vista ad elenco">
-                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/></svg>
-                            </button>
-                            <button type="button" class="btn btn-outline-dark" id="btn-view-compact" title="Vista compatta">
-                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                                    <circle cx="8" cy="3" r="1.5"/>
-                                    <circle cx="8" cy="8" r="1.5"/>
-                                    <circle cx="8" cy="13" r="1.5"/>
-                                </svg>
-                            </button>
+                    <div class="row mt-3 d-none" id="container-filtro-ingrediente">
+                        <div class="col-12">
+                            <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded shadow-sm d-flex align-items-center gap-3">
+                                <span class="fs-4">🥕</span>
+                                <div class="flex-grow-1">
+                                    <label class="form-label fw-bold text-dark mb-1">Ricerca Svuota-Dispensa</label>
+                                    <input type="text" id="filtro-ingrediente" class="form-control border-warning shadow-sm" placeholder="Scrivi gli ingredienti separati da virgola (es. farina, uova)...">
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary mt-4 bg-white shadow-sm" id="btn-chiudi-dispensa">✖</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -309,9 +315,11 @@ const UI = {
                     <h4 class="fw-bold text-primary mt-4 border-bottom pb-2">1. 📚 Esplorare la Galleria</h4>
                     <p>La schermata principale è la tua libreria. Puoi:</p>
                     <ul>
-                        <li>Cercare per <strong>Nome</strong>, filtrare per <strong>Categoria</strong> o <strong>Tag</strong>.</li>
+                        <li>Cercare per <strong>Nome</strong>, o filtrare a tendina per <strong>Categoria</strong> e <strong>Tag</strong>.</li>
                         <li>Usare l'interruttore <strong>Categorie</strong> per raggruppare a cassetti o vedere tutto in ordine alfabetico (A-Z).</li>
                         <li>Cambiare visualizzazione (Griglia, Elenco, Compatta) tramite i bottoni in alto a destra.</li>
+                        <li class="mt-2">🥕 <strong>Ricerca Svuota-Dispensa:</strong> Clicca sul bottone con la carota per aprire la ricerca per ingredienti. Scrivi più ingredienti separati da virgola (es. <em>mascarpone, fragole</em>) per trovare tutte le ricette che li contengono (anche all'interno delle loro sottoricette!).</li>
+                        <li>🎲 <strong>La Roulette:</strong> Non sai cosa cucinare? Applica i tuoi filtri preferiti (es. Categoria "Torte") e premi <strong>"Sorprendimi"</strong> per farti pescare una ricetta a caso dal sistema.</li>
                     </ul>
         `;
 
@@ -341,17 +349,17 @@ const UI = {
                     <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">5. 🛒 Spesa e 📅 Calendario</h4>
                     <p>Essendo Amministratore, hai le chiavi per gestire la produzione:</p>
                     <ul>
-                        <li><strong>Spesa:</strong> Aggiungi ricette al carrello; gli ingredienti verranno raggruppati e sommati. Tutto si salva sul cloud in tempo reale!</li>
+                        <li><strong>Spesa:</strong> Aggiungi ricette al carrello; gli ingredienti verranno raggruppati e sommati. Con il bottone <strong>"Invia su WA"</strong> puoi formattare automaticamente il carrello in un messaggio Whatsapp pulito ed elegante!</li>
                         <li><strong>Calendario:</strong> Tieni traccia delle produzioni giornaliere, aggiungendo anche delle "Note" che si incolleranno in automatico alla storia della ricetta.</li>
                     </ul>
 
-                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. ⚙️ Impostazioni, Dizionari e Aggiornamenti</h4>
-                    <p>Puoi gestire il dizionario degli ingredienti consentiti per mantenere i dati puliti. Se l'applicazione dovesse sembrare "bloccata" o non aggiornata, ricorda di premere <strong>Ctrl + F5</strong> sulla tastiera per svuotare la cache del browser (utile soprattutto su browser come Opera).</p>
+                    <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">6. ⚙️ Impostazioni e Backup</h4>
+                    <p>Puoi gestire il dizionario degli ingredienti consentiti per mantenere i dati puliti. Se l'applicazione dovesse sembrare "bloccata" o non aggiornata, ricorda di premere <strong>Ctrl + F5</strong> sulla tastiera per svuotare la cache del browser.</p>
             `;
         } else {
             html += `
                     <h4 class="fw-bold text-primary mt-5 border-bottom pb-2">4. ⚙️ Preferenze grafiche</h4>
-                    <p>Nel menu impostazioni puoi scegliere il tema (Chiaro/Scuro) o l'impostazione predefinita per l'avvio della galleria, adattando l'app alle tue esigenze.</p>
+                    <p>Nel menu impostazioni puoi scegliere il tema (Chiaro/Scuro) o l'impostazione predefinita per l'avvio della galleria, adattando l'app alle tue esigenze visive.</p>
             `;
         }
 

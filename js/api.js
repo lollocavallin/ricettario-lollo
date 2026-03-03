@@ -40,8 +40,7 @@ const API = {
     },
 
     getRicetteGalleria: async () => {
-        // Questa query unisce la ricetta con il nome della sua categoria 
-        // e i nomi dei tag associati attraversando la tabella di mezzo 'ricette_tags'
+        // 1. Scarichiamo solo le ricette base (zero rischi di errore database)
         const { data, error } = await supabaseClient
             .from('ricette')
             .select(`
@@ -53,12 +52,22 @@ const API = {
                 categorie (nome),
                 ricette_tags ( tag (nome) )
             `)
-            .order('data_inserimento', { ascending: false }); // Le più recenti prima
+            .order('data_inserimento', { ascending: false });
 
         if (error) throw error;
+
+        // 2. Scarichiamo gli ingredienti e i legami in modo indipendente e silenzioso
+        const { data: tuttiIng } = await supabaseClient.from('ingredienti').select('id_ricetta, nome_ingrediente');
+        const { data: tuttiLegami } = await supabaseClient.from('sottoricette').select('id_padre, id_figlia');
+
+        // 3. Uniamo i dati manualmente (Questo bypassa ogni potenziale errore di Supabase!)
+        data.forEach(r => {
+            r.ingredienti = tuttiIng ? tuttiIng.filter(i => i.id_ricetta === r.id) : [];
+            r.figlie_ids = tuttiLegami ? tuttiLegami.filter(l => l.id_padre === r.id).map(l => l.id_figlia) : [];
+        });
+
         return data;
     },
-
 
     getRicettaCompleta: async (id) => {
         // 1. Scarichiamo la ricetta padre con i suoi ingredienti, step e tag
