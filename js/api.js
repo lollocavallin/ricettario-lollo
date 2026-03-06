@@ -155,6 +155,11 @@ const API = {
 
     // ... sotto deleteRicetta ...
 
+    rinominaRicettaSingola: async (id_ricetta, nuovoNome) => {
+        const { error } = await supabaseClient.from('ricette').update({ nome: nuovoNome }).eq('id', id_ricetta);
+        if (error) throw error;
+    },
+
     aggiornaRicettaCompleta: async (id_ricetta, ricetta, ingredienti, procedimento, tagsIds, sottoricette) => {
         // 1. Aggiorniamo i dati principali del Padre (titolo, porzioni, ecc.)
         const { error: errRicetta } = await supabaseClient
